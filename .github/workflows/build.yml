@@ -20,15 +20,18 @@ jobs:
             -scheme Unity-iPhone \
             -configuration Release \
             -archivePath $PWD/build/Unity-iPhone.xcarchive \
+            -allowProvisioningUpdates \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_ENTITLEMENTS="" \
-            CODE_SIGNING_METHOD=manual
+            CODE_SIGNING_METHOD=manual \
+            COMPILER_INDEX_STORE_ENABLE=NO
 
       - name: Create IPA (Payload)
         run: |
-          mkdir Payload
-          cp -r build/Unity-iPhone.xcarchive/Products/Applications/Unity-iPhone.app Payload/
+          mkdir -p Payload
+          # .appフォルダを執念で探してPayloadにコピーするんや
+          find build/Unity-iPhone.xcarchive -name "*.app" -exec cp -r {} Payload/ \;
           zip -r MyGame.ipa Payload
 
       - name: Upload result
