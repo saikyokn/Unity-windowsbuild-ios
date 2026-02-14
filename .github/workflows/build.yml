@@ -1,0 +1,38 @@
+name: Build Unsigned IPA
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Build Archive
+        run: |
+          xcodebuild archive \
+            -project Unity-iPhone.xcodeproj \
+            -scheme Unity-iPhone \
+            -configuration Release \
+            -archivePath $PWD/build/Unity-iPhone.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_ENTITLEMENTS="" \
+            CODE_SIGNING_METHOD=manual
+
+      - name: Create IPA (Payload)
+        run: |
+          mkdir Payload
+          cp -r build/Unity-iPhone.xcarchive/Products/Applications/Unity-iPhone.app Payload/
+          zip -r MyGame.ipa Payload
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: Unsigned_IPA
+          path: MyGame.ipa
